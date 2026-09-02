@@ -1,0 +1,19 @@
+{
+  "name": "figma-lossless",
+  "version": "0.6.0",
+  "description": "Collect Figma REST evidence losslessly, compile it into a verifiable design contract, and gate UI implementations against that contract.",
+  "author": {
+    "name": "joonseong11",
+    "url": "https://github.com/joonseong11"
+  },
+  "homepage": "https://github.com/joonseong11/figma-lossless#readme",
+  "repository": "https://github.com/joonseong11/figma-lossless",
+  "license": "MIT",
+  "keywords": [
+    "figma",
+    "design-system",
+    "ui-verification",
+    "visual-testing",
+    "playwright"
+  ]
+}

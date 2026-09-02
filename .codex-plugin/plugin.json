@@ -1,0 +1,35 @@
+{
+  "name": "figma-lossless",
+  "version": "0.6.0",
+  "description": "Collect Figma REST evidence losslessly, compile it into a verifiable design contract, and gate UI implementations against that contract.",
+  "author": {
+    "name": "joonseong11",
+    "url": "https://github.com/joonseong11"
+  },
+  "homepage": "https://github.com/joonseong11/figma-lossless#readme",
+  "repository": "https://github.com/joonseong11/figma-lossless",
+  "keywords": [
+    "figma",
+    "design-system",
+    "ui-verification",
+    "visual-testing",
+    "playwright"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Figma Lossless",
+    "shortDescription": "Compile Figma evidence and enforce exact UI gates",
+    "longDescription": "Collect Figma REST evidence losslessly, compile it into a Design IR with property accounting, capture the implementation, and fail incomplete structure, copy, geometry, style, asset, visual, component, or flow coverage.",
+    "developerName": "joonseong11",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/joonseong11/figma-lossless",
+    "defaultPrompt": [
+      "Collect this Figma screen and export a specification I can implement from.",
+      "Verify this UI implementation against its compiled Figma contract."
+    ]
+  }
+}

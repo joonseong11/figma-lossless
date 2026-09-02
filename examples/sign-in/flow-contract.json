@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "featureId": "demo-sign-in",
+  "transitions": [
+    {
+      "id": "sign-in-empty-submit",
+      "from": "10:100",
+      "action": "Submit with required fields empty",
+      "to": "10:120",
+      "assertions": ["required error copy is exact", "focus and error style are visible"],
+      "requiresConfirmation": false
+    },
+    {
+      "id": "sign-in-auth-rejected",
+      "from": "10:100",
+      "action": "Submit credentials the server rejects",
+      "to": "10:140",
+      "assertions": ["authentication failure copy is exact", "entered values are preserved"],
+      "requiresConfirmation": false
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "featureId": "demo-sign-in",
+  "requiredComponents": ["Header", "Text Input", "Button_Solid"],
+  "mappings": [
+    {
+      "figmaComponent": "Header",
+      "implementation": "AppHeader",
+      "decision": "exact-match",
+      "notes": "Preserve back icon asset, title alignment, and safe-area spacing."
+    },
+    {
+      "figmaComponent": "Text Input",
+      "implementation": "TextField",
+      "decision": "exact-match",
+      "notes": "Validate default, focus, filled, error, password-hidden, and password-visible variants."
+    },
+    {
+      "figmaComponent": "Button_Solid",
+      "implementation": "PrimaryButton",
+      "decision": "exact-match",
+      "notes": "Validate enabled, disabled, pressed, and loading states."
+    }
+  ]
+}

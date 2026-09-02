@@ -1,0 +1,16 @@
+{
+  "requireAllContexts": true,
+  "requireAllCompiledSpecs": true,
+  "requireAllElements": true,
+  "requireAllExactCopy": true,
+  "requireLocalAssets": true,
+  "requireFlowResults": true,
+  "requireFlowEvidenceBinding": true,
+  "requireFlowContract": true,
+  "requireComponentContract": true,
+  "requireReferenceScreenshots": true,
+  "allowSelfTestSnapshot": false,
+  "geometryTolerancePx": 1,
+  "visualChannelTolerance": 8,
+  "visualMaxMismatchRatio": 0.005
+}

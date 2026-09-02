@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "featureId": "demo-sign-in",
+  "contractSha256": "REPLACE_WITH_SHA256_OF_YOUR_FLOW_CONTRACT",
+  "results": {
+    "sign-in-empty-submit": {
+      "passed": true,
+      "from": "10:100",
+      "to": "10:120",
+      "assertions": [
+        {"passed": true, "evidence": "tests/sign-in.spec.ts:required-copy"},
+        {"passed": true, "evidence": "tests/sign-in.spec.ts:required-style"}
+      ]
+    },
+    "sign-in-auth-rejected": {
+      "passed": true,
+      "from": "10:100",
+      "to": "10:140",
+      "assertions": [
+        {"passed": true, "evidence": "tests/sign-in.spec.ts:auth-failure-copy"},
+        {"passed": true, "evidence": "tests/sign-in.spec.ts:input-preservation"}
+      ]
+    }
+  }
+}

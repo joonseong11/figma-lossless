@@ -1,0 +1,4 @@
+interface:
+  display_name: "Verify Figma Design"
+  short_description: "Compile Figma evidence and enforce exact UI gates"
+  default_prompt: "Use $figma-lossless:verify-design to collect Figma REST evidence and verify this UI implementation against it."

@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68,<82"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "figma-lossless"
+version = "0.6.0"
+description = "Collect Figma REST evidence losslessly, compile it into a verifiable design contract, and gate UI implementations against it."
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.9"
+dependencies = ["Pillow>=10,<13"]
+
+[project.scripts]
+figma-lossless = "figma_lossless.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

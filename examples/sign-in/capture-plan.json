@@ -1,0 +1,10 @@
+{
+  "baseUrl": "http://127.0.0.1:3000",
+  "featureId": "demo-sign-in",
+  "viewport": {"width": 375, "height": 812},
+  "screens": [
+    {"nodeId": "10:100", "name": "SignIn", "route": "/sign-in", "routeKind": "product"},
+    {"nodeId": "10:120", "name": "SignIn_required-error", "route": "/sign-in?fixture=required-error", "routeKind": "fixture"},
+    {"nodeId": "10:140", "name": "SignIn_auth-failed", "route": "/sign-in?fixture=auth-failed", "routeKind": "fixture"}
+  ]
+}

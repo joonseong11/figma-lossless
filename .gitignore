@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+build/
+dist/
+
+# Generated harness evidence may contain local paths, screenshots, MCP request
+# metadata, and short-lived Figma asset URLs. Never publish it by default.
+demo-output/
+.figma-lossless/
+reports/
+*.get-design-context.raw.json
+*.metadata.raw.json
+*.variable-defs.raw.json
+*.download-assets.raw.json
+
+# Local environment
+.env
+.env.*
+.DS_Store
