@@ -584,6 +584,7 @@ Stop 시점에 아직 flush 되지 않을 수 있어 이전 턴 텍스트를 읽
 |---|---|
 | [스킬 사용법](./skills/verify-design/SKILL.md) | 에이전트가 이 도구를 어떤 순서로 쓰는지 |
 | [아키텍처](./docs/architecture.md) | 수집·컴파일·판정이 어떻게 나뉘어 있는지 |
+| [게이트 설계 근거](./docs/gate-design-rationale.md) | 게이트 판정이 **왜** 이 모양인지, 어떤 "개선"이 후퇴인지 |
 | [예제 계약](./examples/sign-in/) | 계약 파일 4종이 실제로 어떤 모양인지 |
 | [변경 이력](./CHANGELOG.md) | 릴리스마다 무엇이 바뀌었는지 |
 
