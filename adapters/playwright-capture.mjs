@@ -93,8 +93,19 @@ const page = await context.newPage();
 // same-origin traffic is never intercepted at all: routing it through
 // `route.continue()` stalls on a streamed response, which is exactly what a
 // framework dev server sends, and the capture would hang instead of failing.
+// A plan may name additional localhost origins (a mock backend on another
+// port, for example) that the product routes are allowed to call. Anything
+// else stays blocked, and a non-localhost entry is a plan error, not a hole.
+const allowedOrigins = new Set([baseUrl.origin]);
+for (const entry of plan.allowedOrigins ?? []) {
+  const origin = new URL(entry);
+  if (!localHosts.has(origin.hostname) || !["http:", "https:"].includes(origin.protocol)) {
+    throw new Error(`allowedOrigins entries must be localhost HTTP(S) origins: ${entry}`);
+  }
+  allowedOrigins.add(origin.origin);
+}
 const isSameOrigin = (url) =>
-  ["data:", "blob:"].includes(url.protocol) || url.origin === baseUrl.origin;
+  ["data:", "blob:"].includes(url.protocol) || allowedOrigins.has(url.origin);
 await page.route(
   (url) => !isSameOrigin(url),
   async (route) => {
