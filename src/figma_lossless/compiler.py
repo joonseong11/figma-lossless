@@ -190,6 +190,10 @@ OPAQUE_KEYS = frozenset(
         "devStatus",
         "explicitVariableModes",
         "exportSettings",
+        "isFixed",
+        # star shape geometry (STAR nodes)
+        "count",
+        "starInnerScale",
         "measurements",
         "pluginData",
         "scrollBehavior",
