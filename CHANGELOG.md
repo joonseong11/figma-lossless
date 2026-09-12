@@ -3,6 +3,43 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르고,
 버전은 [유의적 버전](https://semver.org/lang/ko/)을 따릅니다.
 
+## [0.7.0] — 2026-09-11
+
+추출은 열고, 검증은 잠갔습니다. 문서를 읽고 바로 써 볼 사람에게 필요한 것은 사양 문서 하나이고,
+게이트와 강제 훅은 구현물이 있고 판정에 동의한 뒤에나 의미가 있기 때문입니다.
+
+### 변경 (호환성 깨짐)
+
+- **기본 모드가 `extract` 입니다.** `collect`·`compile`·`export-design`·`export-copy`·`mode` 만 동작하고,
+  `propose-slots`·`propose-reuse`·`vendor-assets`·`snapshot-template`·`validate`·`serve-report` 는
+  잠금 안내와 함께 `exit 1` 로 거부됩니다(파일을 건드리기 전에).
+- **캡처 어댑터(`adapters/playwright-capture.mjs`)도 같은 잠금을 봅니다.** 추출 모드에서는 출력 디렉터리를
+  만들기 전에 거부합니다.
+- **강제 훅은 검증 모드에서만 동작합니다.** 추출 모드에서는 SessionStart·UserPromptSubmit·PreToolUse·
+  PostToolUse·Stop 전부 무반응이고 상태 파일도 만들지 않습니다. `harness_hook.py scope --set` 도 거부됩니다.
+  `pause`·`reset` 은 정리용이라 그대로 됩니다. 이미 있던 `state.json` 은 지우지 않으며, 잠금을 풀면
+  기존 만료 규칙 아래에서 그대로 재개됩니다.
+- 기존처럼 검증을 쓰던 디렉터리는 한 번 `figma-lossless mode --set verify` 를 실행하면 이전과 같습니다.
+  `FIGMA_LOSSLESS_MODE=verify` 는 그 프로세스만 풀고 훅은 켜지 않습니다(훅은 Claude Code 를 띄운 환경만 봅니다).
+
+### 추가
+
+- `figma-lossless mode [--set extract|verify] [--clear]` — 모드 확인·해제·잠금.
+  파일은 `<cwd>/.figma-lossless/mode.json` 이고 현재 디렉터리에서 위로 가장 가까운 것을 씁니다.
+  유효한 환경변수 `FIGMA_LOSSLESS_MODE` 가 파일보다 우선하고, 잘못된 값은 무시하고 다음 출처로 넘어갑니다
+  (오타만으로 검증이 풀리지 않습니다). `mode --set` 은 파일에 쓴 값이 아니라 **유효 모드**를 보고합니다.
+- `src/figma_lossless/mode.py` 와 훅의 `_resolve_mode` 가 같은 규칙을 쓰는지 테스트로 고정했습니다(`tests/test_mode.py`).
+
+### 문서
+
+- README 를 601줄에서 절반 이하로 줄이고 추출 절차만 남겼습니다. 게이트 12개·검증 절차·설정·승인 편차·
+  훅 FSM·설계 근거·알려진 한계·파이프라인 도식은 **[docs/verification.md](./docs/verification.md)** 로
+  옮겼습니다. 설치 확인·갱신·제거·부트스트랩 환경변수는 README 에 한 줄씩 남겼고, "이 설계가 나온 실패"·
+  "답하는 질문" 표는 검증 문서 머리로 옮겼습니다. 삭제한 것은 옛 README 의 중복 설명뿐입니다.
+- `compile` 은 회계 위반이 있어도 `exit 0` 입니다. 옛 README 가 "실패" 로 읽힐 수 있게 적었던 부분을
+  "출력의 `accountingViolations` 를 봐야 한다" 로 고쳤습니다(동작 변경 없음).
+- 스킬(`SKILL.md`)에 모드 절을 추가했습니다: 기본 산출물은 사양 문서이고, 잠금 해제는 사용자의 결정입니다.
+
 ## [0.6.0] — 2026-09-02
 
 첫 공개 릴리스입니다. 동작은 0.5.0과 같고, 이름과 문서 동선만 바뀌었습니다.

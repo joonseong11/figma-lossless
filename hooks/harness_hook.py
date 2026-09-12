@@ -18,7 +18,14 @@ directory), not this process's own working directory. This file must never
 raise past main(): enforcement is fail-open, so any unexpected error exits 0
 without touching state rather than breaking an unrelated tool call.
 
-These hooks are registered globally (every session, every project), so
+These hooks are registered globally (every session, every project), and
+they are inert unless the directory has been unlocked into verify mode
+(`figma-lossless mode --set verify`, which writes
+<cwd>/.figma-lossless/mode.json, or FIGMA_LOSSLESS_MODE=verify). The
+harness ships in extract mode, where the only deliverable is a spec and
+there is nothing to hold a session to. `_resolve_mode` mirrors
+figma_lossless.mode.resolve_mode; this file cannot import the package
+because it runs under the system interpreter. Within verify mode,
 enforcement only engages where harness use is actually observed: a real
 `collect`/`compile`/`validate`/capture/`export-copy`/`export-design` command,
 or an explicit
@@ -41,6 +48,9 @@ from typing import Any
 
 STATE_DIR_NAME = ".figma-lossless"
 STATE_FILE_NAME = "state.json"
+MODE_FILE_NAME = "mode.json"
+MODE_ENV = "FIGMA_LOSSLESS_MODE"
+MODE_VALUES = ("extract", "verify")
 MAX_STOP_BLOCKS = 3
 STALE_AFTER_SECONDS = 86400
 
@@ -164,6 +174,37 @@ def _expire_if_stale(cwd: str, state: dict[str, Any]) -> dict[str, Any]:
 
 def _state_dir(cwd: str) -> Path:
     return Path(cwd) / STATE_DIR_NAME
+
+
+def _resolve_mode(cwd: str) -> str:
+    """Mirror of figma_lossless.mode.resolve_mode: env, then file, then extract."""
+
+    value = os.environ.get(MODE_ENV)
+    if value in MODE_VALUES:
+        return value
+    # Nearest mode file at or above cwd, like git finding its repository, so
+    # a command run from a subdirectory and the hook (which only knows the
+    # session directory) land on the same declaration.
+    base = Path(cwd).absolute()
+    for directory in (base, *base.parents):
+        candidate = directory / STATE_DIR_NAME / MODE_FILE_NAME
+        if not candidate.is_file():
+            continue
+        try:
+            payload = json.loads(candidate.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return "extract"
+        value = payload.get("mode") if isinstance(payload, dict) else None
+        return value if value in MODE_VALUES else "extract"
+    return "extract"
+
+
+def _verify_mode_locked_message(what: str) -> str:
+    return (
+        f"{what} needs verify mode, and this directory is in extract mode "
+        "(the default). Unlock it on purpose with `figma-lossless mode --set "
+        "verify` (or FIGMA_LOSSLESS_MODE=verify)."
+    )
 
 
 def _state_path(cwd: str) -> Path:
@@ -789,6 +830,12 @@ def handle_scope(args: list[str]) -> int:
         return 1
 
     cwd = os.getcwd()
+    if _resolve_mode(cwd) != "verify":
+        # Declaring a scope arms the Stop block for this directory. In extract
+        # mode there is no implementation to be held to, so the declaration
+        # is refused rather than quietly activating enforcement.
+        print(_verify_mode_locked_message("scope --set"), file=sys.stderr)
+        return 1
     state = load_state(cwd)
     state["active"] = True
     state["scope"] = value
@@ -842,6 +889,11 @@ def main() -> int:
         return 0
 
     payload = _read_stdin_json()
+    cwd = payload.get("cwd") or os.getcwd()
+    if _resolve_mode(cwd) != "verify":
+        # Extract mode: nothing is tracked, announced, blocked, or asked.
+        # State already on disk is left alone so unlocking later resumes it.
+        return 0
     handler(payload)
     return 0
 

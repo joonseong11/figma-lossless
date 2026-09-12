@@ -19,6 +19,40 @@ if (!args.plan || !args.output) {
   process.exit(1);
 }
 
+// Capturing is a verification step, and verification is locked until someone
+// unlocks it on purpose. Same rule as figma_lossless/mode.py and the hooks: a
+// valid FIGMA_LOSSLESS_MODE wins, then the nearest .figma-lossless/mode.json
+// at or above the working directory, then "extract". Refuse before creating
+// any output so a curious run leaves nothing behind.
+const MODE_VALUES = new Set(["extract", "verify"]);
+const resolveMode = async () => {
+  const fromEnv = process.env.FIGMA_LOSSLESS_MODE;
+  if (MODE_VALUES.has(fromEnv)) return fromEnv;
+  let directory = path.resolve(process.cwd());
+  for (;;) {
+    const candidate = path.join(directory, ".figma-lossless", "mode.json");
+    try {
+      const payload = JSON.parse(await fs.readFile(candidate, "utf8"));
+      const value = payload && typeof payload === "object" ? payload.mode : undefined;
+      return MODE_VALUES.has(value) ? value : "extract";
+    } catch (error) {
+      if (error?.code !== "ENOENT") return "extract";
+    }
+    const parent = path.dirname(directory);
+    if (parent === directory) return "extract";
+    directory = parent;
+  }
+};
+if ((await resolveMode()) !== "verify") {
+  console.error(
+    "playwright-capture.mjs is a verification step and verification mode is locked " +
+      "(the harness ships in extract mode). Unlock it on purpose with\n" +
+      "  figma-lossless mode --set verify        # this directory tree\n" +
+      "or  FIGMA_LOSSLESS_MODE=verify              # this process only",
+  );
+  process.exit(1);
+}
+
 const planPath = path.resolve(args.plan);
 const outputPath = path.resolve(args.output);
 const outputDir = path.dirname(outputPath);

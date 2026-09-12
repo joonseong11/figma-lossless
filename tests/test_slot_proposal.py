@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 import contextlib
 import io
 import tempfile
@@ -8,6 +10,10 @@ from pathlib import Path
 from typing import Any
 
 from figma_lossless.cli import main
+
+# These tests drive verification commands, which the CLI locks in the
+# default extract mode (see figma_lossless.mode). Unlock for this process.
+os.environ.setdefault("FIGMA_LOSSLESS_MODE", "verify")
 from figma_lossless.slot_proposal import propose_slots
 from figma_lossless.util import read_json, write_json
 
