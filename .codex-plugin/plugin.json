@@ -1,6 +1,6 @@
 {
   "name": "figma-lossless",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Collect Figma REST evidence losslessly, compile it into a verifiable design contract, and gate UI implementations against that contract.",
   "author": {
     "name": "joonseong11",
@@ -18,7 +18,7 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Figma Lossless",
-    "shortDescription": "Compile Figma evidence and enforce exact UI gates",
+    "shortDescription": "Extract Figma designs losslessly; unlock exact UI gates when needed",
     "longDescription": "Collect Figma REST evidence losslessly, compile it into a Design IR with property accounting, capture the implementation, and fail incomplete structure, copy, geometry, style, asset, visual, component, or flow coverage.",
     "developerName": "joonseong11",
     "category": "Developer Tools",

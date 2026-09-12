@@ -15,6 +15,19 @@ HOOKS_CONFIG = REPOSITORY_ROOT / "hooks" / "hooks.json"
 STALE_AFTER_SECONDS = 86400
 
 
+def verify_env(base: dict | None = None) -> dict:
+    """Environment with verify mode unlocked.
+
+    The harness ships in extract mode, where every hook is inert; the
+    enforcement behaviour these tests pin only exists once verify mode is
+    unlocked. tests/test_mode.py covers the locked default.
+    """
+
+    env = dict(os.environ if base is None else base)
+    env["FIGMA_LOSSLESS_MODE"] = "verify"
+    return env
+
+
 def fresh_timestamp() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -38,7 +51,7 @@ def run_hook(
         cwd=str(cwd) if cwd else None,
         capture_output=True,
         text=True,
-        env=env,
+        env=verify_env(env),
         check=False,
     )
 
@@ -49,6 +62,7 @@ def run_pause(args: list[str], cwd: Path) -> subprocess.CompletedProcess:
         cwd=str(cwd),
         capture_output=True,
         text=True,
+        env=verify_env(),
         check=False,
     )
 
@@ -535,6 +549,7 @@ class PostToolUseTest(unittest.TestCase):
                 cwd=str(cwd),
                 capture_output=True,
                 text=True,
+                env=verify_env(),
                 check=False,
             )
             self.assertEqual(scope_result.returncode, 0, scope_result.stderr)
@@ -757,6 +772,7 @@ def run_reset(cwd: Path) -> subprocess.CompletedProcess:
         cwd=str(cwd),
         capture_output=True,
         text=True,
+        env=verify_env(),
         check=False,
     )
 
@@ -806,6 +822,7 @@ def run_scope(args: list[str], cwd: Path) -> subprocess.CompletedProcess:
         cwd=str(cwd),
         capture_output=True,
         text=True,
+        env=verify_env(),
         check=False,
     )
 

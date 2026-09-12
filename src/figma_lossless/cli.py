@@ -13,6 +13,14 @@ from .collector import CollectOptions, FigmaCollector
 from .compiler import CompileOptions, DesignCompiler
 from .copy_export import export_copy
 from .design_export import FORMATS, export_design
+from .mode import (
+    MODES,
+    clear_mode,
+    is_locked,
+    locked_message,
+    resolve_mode,
+    set_mode,
+)
 from .report import render_report
 from .reuse_proposal import (
     DEFAULT_MAX_SOURCE_FREQUENCY,
@@ -206,11 +214,67 @@ def build_parser() -> argparse.ArgumentParser:
     )
     serve_parser.add_argument("--directory", type=Path, required=True)
     serve_parser.add_argument("--port", type=int, default=4173)
+
+    mode_parser = commands.add_parser(
+        "mode",
+        help=(
+            "Show or change the operating mode. The harness ships in "
+            "'extract' (collect/compile/export only); 'verify' unlocks "
+            "capture, gates and the enforcement hooks for this directory."
+        ),
+    )
+    mode_group = mode_parser.add_mutually_exclusive_group()
+    mode_group.add_argument("--set", choices=MODES, dest="set_mode")
+    mode_group.add_argument(
+        "--clear",
+        action="store_true",
+        help="Remove .figma-lossless/mode.json so the default (extract) applies.",
+    )
     return parser
 
 
 def _run(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+
+    # Extraction is open; everything that judges an implementation is locked
+    # until verify mode is unlocked on purpose (see mode.py). Refusing here,
+    # before any file is touched, keeps a curious `validate` from leaving a
+    # half-written report behind.
+    mode, _ = resolve_mode()
+    if is_locked(args.command, mode):
+        print(locked_message(args.command), file=sys.stderr)
+        return 1
+
+    if args.command == "mode":
+        # Always report the *effective* mode: a file write can be shadowed by
+        # FIGMA_LOSSLESS_MODE in this process, and saying "extract" while the
+        # process is still in verify would be the lie this command exists to
+        # prevent.
+        if args.set_mode:
+            path = set_mode(args.set_mode)
+            mode, source = resolve_mode()
+            if mode != args.set_mode:
+                print(
+                    f"warning: wrote {args.set_mode!r} to {path} but "
+                    f"FIGMA_LOSSLESS_MODE={os.environ.get('FIGMA_LOSSLESS_MODE')!r} "
+                    "overrides it in this process",
+                    file=sys.stderr,
+                )
+            print(
+                json.dumps(
+                    {"mode": mode, "source": source, "file": str(path), "fileMode": args.set_mode}
+                )
+            )
+            return 0
+        if args.clear:
+            removed = clear_mode()
+            mode, source = resolve_mode()
+            print(json.dumps({"mode": mode, "source": source, "removed": removed}))
+            return 0
+        mode, source = resolve_mode()
+        print(json.dumps({"mode": mode, "source": source}))
+        return 0
+
     if args.command == "compile":
         if args.input is None and args.rest_input is None:
             raise ValueError("compile requires --input and/or --rest-input")

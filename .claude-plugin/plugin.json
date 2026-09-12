@@ -1,6 +1,6 @@
 {
   "name": "figma-lossless",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Collect Figma REST evidence losslessly, compile it into a verifiable design contract, and gate UI implementations against that contract.",
   "author": {
     "name": "joonseong11",

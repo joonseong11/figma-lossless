@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 import contextlib
 import io
 import tempfile
@@ -10,6 +12,10 @@ from typing import Any
 import figma_lossless.reuse_proposal as reuse_proposal_module
 import figma_lossless.slot_proposal as slot_proposal_module
 from figma_lossless.cli import main
+
+# These tests drive verification commands, which the CLI locks in the
+# default extract mode (see figma_lossless.mode). Unlock for this process.
+os.environ.setdefault("FIGMA_LOSSLESS_MODE", "verify")
 from figma_lossless.reuse_proposal import propose_reuse
 from figma_lossless.util import read_json, write_json
 

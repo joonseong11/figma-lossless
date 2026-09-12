@@ -19,9 +19,24 @@ CAPTURE="${PLUGIN_ROOT}/adapters/playwright-capture.mjs"
 
 Run `python3 "$HARNESS" --help` before the first operation. The launcher provisions its own isolated environment on first run and caches it under `~/.cache/figma-lossless` (override with `FIGMA_LOSSLESS_CACHE_DIR`); that one-time setup needs network access. If the environment must not be created, set `FIGMA_LOSSLESS_NO_BOOTSTRAP=1` and install the harness dependencies into an approved environment yourself, then run the same launcher with that interpreter.
 
+## Modes: extraction is open, verification is locked
+
+The harness ships in **extract mode**. Only `collect`, `compile`, `export-design`, `export-copy` and `mode` run; every command that judges an implementation (`propose-*`, `vendor-assets`, capture, `validate`) refuses with an "unlock" message, and the enforcement hooks below stay inert. The deliverable in this mode is the exported spec (and, for a copy audit, the copy export) — hand it over and stop.
+
+Unlock **verify mode** only when the user asks for an implementation to be checked against the design:
+
+```bash
+python3 "$HARNESS" mode                  # show the current mode and where it comes from
+python3 "$HARNESS" mode --set verify     # this directory: writes .figma-lossless/mode.json
+python3 "$HARNESS" mode --clear          # back to the default
+# per process instead of per directory: FIGMA_LOSSLESS_MODE=verify
+```
+
+Unlocking is a decision the user makes, not one you make for them: it arms the Stop block for the directory and commits the session to running verification to its terminal state. Do not unlock to "have a look" at the gates on a spec-only request, and say in the completion report that verification was not run when the mode stayed `extract`.
+
 ## Inputs to confirm with the user
 
-Only these require a human decision — everything else is mechanical:
+Only these require a human decision — everything else is mechanical. In extract mode only item 1 applies; items 2–4 exist for verify mode and must not be asked on a spec-only request.
 
 1. **Target design scope** — the Figma URL(s). Convert URL node ids to API form (`node-id=22143-63319` → `22143:63319`). Use a top-node metadata call only to inventory frames; every implementation frame gets its own collected evidence.
 2. **Implementation location and run command** — repository, branch, dev-server command, and one localhost fixture route per screen state (locale, error, loading, ...).
@@ -34,13 +49,14 @@ Only these require a human decision — everything else is mechanical:
 
 **Resolve the scope first.** When the user's words leave the scope ambiguous, that is itself a request defect — ask once, then run:
 
+- **Design spec** (the default, extract mode): collect → compile → `export-design`. The exported document is the terminal state. Nothing else is owed.
 - **Copy audit** (locale copy check only): collect the locale frames (omit `--include-images`; no pixels are used) → compile → `export-copy` → diff against the message catalogs the user names → report matched, missing, and mismatched entries per locale. That report is the terminal state. Do not instrument, capture, or validate an implementation in this scope.
-- **Full verification**: the complete workflow below. The terminal state is a fresh exit-`0` validate — or a defect report whose remaining entries all require a user decision (genuine design deviations needing an approved-deviation entry, not fixable implementation errors).
+- **Full verification** (verify mode only): the complete workflow below. The terminal state is a fresh exit-`0` validate — or a defect report whose remaining entries all require a user decision (genuine design deviations needing an approved-deviation entry, not fixable implementation errors).
 
-Once the scope is resolved, declare it before running `collect`:
+In verify mode, once the user has unlocked it and the scope is resolved, declare the scope before running `collect`. In extract mode skip this: the hooks are inert there and the declaration is refused.
 
 ```bash
-python3 "$PLUGIN_ROOT/hooks/harness_hook.py" scope --set full     # or: --set copy-audit
+python3 "$PLUGIN_ROOT/hooks/harness_hook.py" scope --set full     # or: --set copy-audit (verify mode only)
 ```
 
 This matters most for the locale copy audit *inside* full verification — dumping the copy contract with `export-copy` before `capture`/`validate` have run. Up to that point the two recipes are byte-identical, so without the declaration the hook cannot tell them apart and may mark the workflow terminal early, leaving the implementation stretch unenforced. It self-heals once `capture` or `validate` runs; declaring the scope closes the window from the start.
@@ -56,7 +72,7 @@ Batch every such question into a single round, propose a default answer for each
 
 ### Enforcement hooks
 
-The parts of this execution policy that are mechanically checkable are enforced by plugin hooks (`hooks/hooks.json` and `hooks/harness_hook.py`), not left to memory alone. They track workflow state in `<cwd>/.figma-lossless/state.json` (`active`, `scope`, `terminal`, `pausedForUser`, `blockCount`) across the session. These hooks are registered globally across every session and project, so tracking only activates where harness use is actually observed — a real `collect`/`compile`/`validate`/capture/`export-copy` command, or a prompt that starts with `/verify-design` or `$figma-lossless:verify-design` (merely discussing the skill does not activate it) — and a workflow untouched for 24 hours is treated as abandoned and self-heals to inactive rather than nagging the directory indefinitely:
+The parts of this execution policy that are mechanically checkable are enforced by plugin hooks (`hooks/hooks.json` and `hooks/harness_hook.py`), not left to memory alone. **They do nothing in extract mode**; the directory must be in verify mode (`mode --set verify` or `FIGMA_LOSSLESS_MODE=verify`) for any of the following to engage. Once unlocked, they track workflow state in `<cwd>/.figma-lossless/state.json` (`active`, `scope`, `terminal`, `pausedForUser`, `blockCount`) across the session. These hooks are registered globally across every session and project, so tracking only activates where harness use is actually observed — a real `collect`/`compile`/`validate`/capture/`export-copy` command, or a prompt that starts with `/verify-design` or `$figma-lossless:verify-design` (merely discussing the skill does not activate it) — and a workflow untouched for 24 hours is treated as abandoned and self-heals to inactive rather than nagging the directory indefinitely:
 
 - **Stop** is blocked while a workflow is `active` and not yet `terminal` — copy-audit reaches terminal after a successful `export-copy`; full verification reaches terminal only after the hook reads a fresh `gate-results.json` itself and finds `passed: true`. Chat claims of success are never trusted. The block gives up after 3 consecutive attempts so it pressures completion without trapping the session.
 - **UserPromptSubmit** initializes tracking on an explicit invocation, and clears a declared pause when the user answers.
@@ -221,4 +237,4 @@ When REST access is unavailable, the original path still works: build a raw-evid
 
 ## Completion report
 
-Report the collection proof (expected/collected/version), compiled screen counts, accounting summary, every gate status, hard-failure and warning counts, report path, commands actually run, and any validation gap. Declare completion only after fresh exit-`0` validation with no missing required evidence.
+Report the collection proof (expected/collected/version), compiled screen counts, accounting summary, and the commands actually run. In extract mode add the exported spec path and state plainly that the implementation was not verified. In verify mode add every gate status, hard-failure and warning counts, the report path, and any validation gap, and declare completion only after fresh exit-`0` validation with no missing required evidence.
