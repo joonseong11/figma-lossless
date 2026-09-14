@@ -3,6 +3,28 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르고,
 버전은 [유의적 버전](https://semver.org/lang/ko/)을 따릅니다.
 
+## [0.7.1] — 2026-09-14
+
+### 수정
+
+- **Codex 에서 훅이 매 이벤트마다 실패하던 문제.** `hooks/hooks.json` 이 `"command": "python3"` + `"args": [...]`
+  형식이었는데, Codex 의 훅 스키마에는 `args` 필드가 없어 인자 없는 `python3` 가 실행되고 stdin 의 JSON
+  페이로드를 스크립트로 읽다 SyntaxError 로 끝났다(SessionStart·UserPromptSubmit·PreToolUse·PostToolUse·Stop
+  전부). 한 줄 명령 문자열 `python3 "${CLAUDE_PLUGIN_ROOT}/hooks/harness_hook.py" <Event>` 로 바꿨다 —
+  Claude Code 도 같은 형식을 쓰고, 두 도구 모두 `${CLAUDE_PLUGIN_ROOT}` 를 치환한다(Codex 0.154 에서 실측).
+- **`isFixed`·STAR `count`/`starInnerScale` 를 preserved-opaque 로 분류.** Figma REST 가 legacy `isFixed` 와
+  별 모양 기하를 돌려주는데 어느 목록에도 없어 122프레임 수집에서 회계 위반 114건이 났다. 시각 계약이 없는
+  속성이라 opaque 로 둔다.
+
+### 추가
+
+- 캡처 계획의 `allowedOrigins` 로 localhost 의 다른 포트(mock 백엔드 등)를 허용한다.
+
+### 문서
+
+- "Codex 에는 훅이 없다" 는 옛 안내를 정정했다. Codex 도 플러그인 훅을 실행하며, 세션에서 `/hooks` 로 한 번
+  신뢰해야 켜진다.
+
 ## [0.7.0] — 2026-09-11
 
 추출은 열고, 검증은 잠갔습니다. 문서를 읽고 바로 써 볼 사람에게 필요한 것은 사양 문서 하나이고,

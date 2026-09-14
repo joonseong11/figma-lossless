@@ -8,7 +8,7 @@
     {
       "name": "figma-lossless",
       "description": "Collect Figma REST evidence losslessly, compile it into a verifiable design contract, and gate UI implementations against that contract.",
-      "version": "0.7.0",
+      "version": "0.7.1",
       "source": "./"
     }
   ]

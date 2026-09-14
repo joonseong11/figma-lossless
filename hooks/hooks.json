@@ -5,11 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
-            "args": [
-              "${CLAUDE_PLUGIN_ROOT}/hooks/harness_hook.py",
-              "SessionStart"
-            ]
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/harness_hook.py\" SessionStart"
           }
         ]
       }
@@ -19,11 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
-            "args": [
-              "${CLAUDE_PLUGIN_ROOT}/hooks/harness_hook.py",
-              "UserPromptSubmit"
-            ]
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/harness_hook.py\" UserPromptSubmit"
           }
         ]
       }
@@ -34,11 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
-            "args": [
-              "${CLAUDE_PLUGIN_ROOT}/hooks/harness_hook.py",
-              "PreToolUse"
-            ]
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/harness_hook.py\" PreToolUse"
           }
         ]
       },
@@ -47,11 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
-            "args": [
-              "${CLAUDE_PLUGIN_ROOT}/hooks/harness_hook.py",
-              "PreToolUse"
-            ]
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/harness_hook.py\" PreToolUse"
           }
         ]
       }
@@ -62,11 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
-            "args": [
-              "${CLAUDE_PLUGIN_ROOT}/hooks/harness_hook.py",
-              "PostToolUse"
-            ]
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/harness_hook.py\" PostToolUse"
           }
         ]
       }
@@ -76,11 +56,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
-            "args": [
-              "${CLAUDE_PLUGIN_ROOT}/hooks/harness_hook.py",
-              "Stop"
-            ]
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/harness_hook.py\" Stop"
           }
         ]
       }
