@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img alt="version" src="https://img.shields.io/badge/version-0.7.0-blue">
+  <img alt="version" src="https://img.shields.io/badge/version-0.7.1-blue">
   <img alt="license" src="https://img.shields.io/badge/License-MIT-yellow.svg">
   <img alt="python" src="https://img.shields.io/badge/python-3.9%2B-brightgreen">
   <img alt="tests" src="https://img.shields.io/badge/tests-495%20run%20%C2%B7%201%20skipped-success">
@@ -45,6 +45,8 @@ claude plugin install figma-lossless@figma-lossless-dev
 codex plugin marketplace add ~/figma-lossless
 codex plugin add figma-lossless@figma-lossless-dev
 ```
+
+Codex 는 플러그인 훅을 처음 한 번 세션 안에서 `/hooks` 로 신뢰해야 합니다. 추출 모드에서는 훅이 아무것도 하지 않으므로 검증 모드를 풀 때 해도 됩니다.
 
 ```bash
 claude plugin list | grep figma          # 목록에 보이면 등록 완료
@@ -111,7 +113,7 @@ $H mode --clear               # 파일 삭제 → 다시 잠금
 잠긴 상태에서 `validate` 나 캡처 어댑터를 실행하면 리포트·스크린샷 같은 산출물을 만들기 전에 안내와 함께 거부됩니다. 풀면 두 가지가 바뀝니다.
 
 - 캡처·게이트 명령이 동작합니다. 실제로 렌더된 DOM 을 계약과 대조해 **12개 항목**으로 판정하고, 실패하면 `exit 2` 라 CI 머지 게이트로 그대로 씁니다. 아무것도 재지 않은 항목은 통과가 아니라 `NOT_EVALUATED` 이고 그 자체가 결함입니다.
-- Claude Code 강제 훅이 이 디렉터리에서 살아납니다. 검증을 끝내지 않고 세션을 나가는 것을 막고, 게이트 허용치를 느슨하게 하는 편집에는 사용자 승인을 요구합니다. 정당하게 멈춰야 할 때는 `harness_hook.py pause --reason "<사유>"` 로 선언합니다. **훅을 켜는 것은 파일입니다** — 명령 앞에 붙인 환경변수는 그 프로세스만 풀고, 훅은 Claude Code 를 띄운 환경만 봅니다. Codex 에는 훅이 없어 완주 여부를 사람이 봅니다.
+- Claude Code 강제 훅이 이 디렉터리에서 살아납니다. 검증을 끝내지 않고 세션을 나가는 것을 막고, 게이트 허용치를 느슨하게 하는 편집에는 사용자 승인을 요구합니다. 정당하게 멈춰야 할 때는 `harness_hook.py pause --reason "<사유>"` 로 선언합니다. **훅을 켜는 것은 파일입니다** — 명령 앞에 붙인 환경변수는 그 프로세스만 풀고, 훅은 Claude Code 를 띄운 환경만 봅니다. Codex 도 같은 훅을 실행합니다. 설치 후 Codex 세션에서 `/hooks` 를 한 번 실행해 플러그인 훅을 신뢰해야 켜집니다.
 
 에이전트에게는 이렇게 말합니다.
 

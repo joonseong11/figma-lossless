@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -95,13 +96,17 @@ class HarnessConfigTest(unittest.TestCase):
             for group in matcher_groups:
                 for handler in group["hooks"]:
                     self.assertEqual(handler["type"], "command")
-                    self.assertEqual(handler["command"], "python3")
-                    script = handler["args"][0].replace(
-                        "${CLAUDE_PLUGIN_ROOT}", str(REPOSITORY_ROOT)
-                    )
-                    self.assertTrue(
-                        Path(script).is_file(), f"missing script: {script}"
-                    )
+                    # One command string, never `command` + `args`: Codex's
+                    # hook schema has no `args` field, so the split form ran a
+                    # bare `python3` that read the JSON payload as a script
+                    # and failed on every event. Both tools expand
+                    # ${CLAUDE_PLUGIN_ROOT} inside the string.
+                    self.assertNotIn("args", handler)
+                    argv = shlex.split(handler["command"])
+                    self.assertEqual(argv[0], "python3")
+                    script = argv[1].replace("${CLAUDE_PLUGIN_ROOT}", str(REPOSITORY_ROOT))
+                    self.assertTrue(Path(script).is_file(), f"missing script: {script}")
+                    self.assertEqual(argv[2], event)
 
     def test_hooks_wired_for_the_five_documented_events(self) -> None:
         config = json.loads(HOOKS_CONFIG.read_text(encoding="utf-8"))
