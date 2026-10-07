@@ -6,7 +6,7 @@ What the tool does and how to use it is in [README.md](README.md); gate design i
 
 ## Where the version lives
 
-A version is declared in six places, and they must always agree:
+A version is declared in six files and one git tag, and they must always agree:
 
 | Place | Form |
 |---|---|
@@ -18,7 +18,7 @@ A version is declared in six places, and they must always agree:
 | `CHANGELOG.md` | topmost `## [X.Y.Z] — YYYY-MM-DD` heading |
 | git | annotated tag `vX.Y.Z` |
 
-`scripts/check-version.sh` checks the first six on every push, and checks the tag name when CI runs for a tag. A version that has no tag is not a release.
+`scripts/check-version.sh` checks the six files on every push, and checks the tag name when CI runs for a tag. A version that has no tag is not a release.
 
 `src/figma_lossless/__init__.py` also has a `__version__`, but it is stale (`0.1.0`) and nothing reads it. It is not part of this scheme; fixing it is a source change that needs its own review.
 
@@ -36,7 +36,7 @@ One version number belongs to exactly one commit. Never reuse a number for diffe
 Do these in order. Do not start the next version until the last step is done for the current one.
 
 1. Create a new branch from an up-to-date `main`: `<type>/<short-topic>-<YYYYMMDD>`.
-2. Make the change. In the final commit of the branch, set the new version in all six places above and add the `CHANGELOG.md` section dated today.
+2. Make the change. In the final commit of the branch, set the new version in all six files above and add the `CHANGELOG.md` section dated today.
 3. Run `scripts/check-version.sh` and `PYTHONPATH=src python3 -m unittest discover -s tests`. Both must pass.
 4. Push the branch and open a pull request against `main`. CI must pass.
 5. Merge with a **merge commit**. Do not squash or rebase: the tag must point at a commit that keeps its hash.
@@ -72,6 +72,6 @@ Checked against `git log` on 2026-10-07. The only tag is `v0.7.1`.
 - **`0.7.0` has no tag.** It was set by `7213682` (manifests) and completed by `67ddbe7` (README badge and CHANGELOG); both are in `main` through merge `4dedf0c` (PR #5). `0.7.0` was never tagged.
 - **`0.6.0` has no tag.** It is the version of the first commit, `866fdc8`, and is unchanged through `4ff5644`.
 - **`0.5.0`, `0.4.0` and `0.3.0` have no tag and no commit.** They appear in `CHANGELOG.md` but no commit in this repository ever declared them; history starts at `0.6.0`. They cannot be tagged.
-- **`v0.7.1` is correct.** It is an annotated tag on `e85b3ba`, the merge of PR #6, where every place above declares `0.7.1`, and it is an ancestor of `origin/main`. The commit that first set `0.7.1` is `c9aa0f0`; tagging the merge commit instead is acceptable because the tree is identical for version purposes.
+- **`v0.7.1` is correct.** It is an annotated tag on `e85b3ba`, the merge of PR #6, where every place above declares `0.7.1`, and it is an ancestor of `origin/main`. The commit that first set `0.7.1` is `c9aa0f0`; the two commits have identical trees. This is a one-time exception for a tag that already existed; new tags follow step 6 of the release procedure.
 - **`0.7.1` is a patch that includes a small addition** (`allowedOrigins` in capture plans). Under the rules above this would be a minor. The number is left as it is, since it is already released.
 - **`src/figma_lossless/__init__.py` declares `__version__ = "0.1.0"`** and has not been kept in step (see "Where the version lives").

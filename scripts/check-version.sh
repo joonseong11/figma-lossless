@@ -15,6 +15,13 @@ def one(pattern, text, label):
 def read(name):
     return (root / name).read_text(encoding="utf-8")
 
+def table(text, name):
+    # Body of one TOML table, so a `version` key in another table cannot match.
+    match = re.search(rf'^\[{re.escape(name)}\][ \t]*\n(.*?)(?=^\[|\Z)', text, re.MULTILINE | re.DOTALL)
+    if not match:
+        raise SystemExit(f"missing [{name}] table")
+    return match.group(1)
+
 claude_plugin = json.loads(read(".claude-plugin/plugin.json"))
 codex_plugin = json.loads(read(".codex-plugin/plugin.json"))
 marketplace = json.loads(read(".claude-plugin/marketplace.json"))
@@ -23,7 +30,7 @@ if len(entries) != 1:
     raise SystemExit("marketplace.json must list figma-lossless exactly once")
 
 values = {
-    "pyproject.toml": one(r'^version = "([^"]+)"$', read("pyproject.toml"), "pyproject version"),
+    "pyproject.toml": one(r'^version = "([^"]+)"$', table(read("pyproject.toml"), "project"), "pyproject [project] version"),
     ".claude-plugin/plugin.json": claude_plugin["version"],
     ".claude-plugin/marketplace.json": entries[0]["version"],
     ".codex-plugin/plugin.json": codex_plugin["version"],
