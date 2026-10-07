@@ -22,6 +22,17 @@ def table(text, name):
         raise SystemExit(f"missing [{name}] table")
     return match.group(1)
 
+def changelog_version(text):
+    # `## [Unreleased]` may sit on top while a release branch is open; a tag must not have it.
+    heads = re.findall(r'^## \[([^]]+)\]', text, re.MULTILINE)
+    if heads and heads[0].lower() == "unreleased":
+        if os.environ.get("GITHUB_REF_TYPE", "") == "tag":
+            raise SystemExit("CHANGELOG.md still has an Unreleased section on a tagged release")
+        heads = heads[1:]
+    if not heads:
+        raise SystemExit("missing CHANGELOG release")
+    return heads[0]
+
 claude_plugin = json.loads(read(".claude-plugin/plugin.json"))
 codex_plugin = json.loads(read(".codex-plugin/plugin.json"))
 marketplace = json.loads(read(".claude-plugin/marketplace.json"))
@@ -35,11 +46,13 @@ values = {
     ".claude-plugin/marketplace.json": entries[0]["version"],
     ".codex-plugin/plugin.json": codex_plugin["version"],
     "README.md": one(r'img\.shields\.io/badge/version-([0-9][^-"]*)-', read("README.md"), "README version badge"),
-    "CHANGELOG.md": one(r'^## \[([^]]+)\]', read("CHANGELOG.md"), "CHANGELOG release"),
+    "CHANGELOG.md": changelog_version(read("CHANGELOG.md")),
 }
 if len(set(values.values())) != 1:
     raise SystemExit(f"version mismatch: {values}")
 version = next(iter(values.values()))
+if not re.fullmatch(r'\d+\.\d+\.\d+', version):
+    raise SystemExit(f"version is not X.Y.Z: {version}")
 ref_type = os.environ.get("GITHUB_REF_TYPE", "")
 ref_name = os.environ.get("GITHUB_REF_NAME", "")
 if ref_type == "tag" and ref_name != f"v{version}":
